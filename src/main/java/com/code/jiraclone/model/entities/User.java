@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -13,6 +14,7 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
+@Slf4j
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -48,6 +50,7 @@ public class User {
     private Set<Project> projectsList = new HashSet<>();
 
     @OneToMany(mappedBy = "assignee")
+    @JsonIgnore
     private Set<Issue> issuesList = new HashSet<>();
 
     @CreatedDate
@@ -59,12 +62,22 @@ public class User {
     private LocalDateTime updatedAt;
 
     public void assignIssue(Issue issue){
-        issuesList.add(issue);
-        issue.setAssignedUser(this);
+        if(issue.getAssignedUser()== null){
+            issuesList.add(issue);
+            issue.setAssignedUser(this);
+            log.info("issue "+issue.getCode()+": "+issue.getName()+" has been succesfully added");
+        }else{
+            throw new IllegalStateException("Issue is already assigned");
+        }
+
     }
 
     public void removeIssue(Issue issue){
-        issuesList.remove(issue);
-        issue.setAssignedUser(null);
+        if (issue.getAssignedUser()!= null && issue.getAssignedUser().equals(this)){
+            issuesList.remove(issue);
+            issue.setAssignedUser(null);
+        }else{
+            throw new IllegalStateException("Issue couldn't be removed either because it's assigned to someone else or is yet to be assigned");
+        }
     }
 }
