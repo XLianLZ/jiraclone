@@ -45,11 +45,11 @@ public class User {
     @Column
     private String profilePhotoUrl;
 
-    @ManyToMany(mappedBy = "members")
+    @ManyToMany(mappedBy = "projectMembers")
     @JsonIgnore
     private Set<Project> projectsList = new HashSet<>();
 
-    @OneToMany(mappedBy = "assignee")
+    @OneToMany(mappedBy = "assignedUser")
     @JsonIgnore
     private Set<Issue> issuesList = new HashSet<>();
 
